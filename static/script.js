@@ -68,17 +68,17 @@ document.getElementById('loanForm').addEventListener('submit', async (e) => {
             // Fairness Testing Setup
             const biasContent = document.querySelector('.bias-content');
             if (data.bias.detected) {
-                let htmlBlock = `<div class="bias-warning">⚠️ Potential bias detected</div><ul>`;
+                let htmlBlock = `<div class="bias-warning">⚠️ Potential bias detected: outcome changes with non-financial attributes</div><ul>`;
                 data.bias.messages.forEach(msg => {
-                    htmlBlock += `<li>${msg.test}: <br>Base outcome: <strong>${msg.base}</strong> vs Flipped outcome: <strong>${msg.flipped}</strong></li>`;
+                    htmlBlock += `<li>${msg.test}: <br>Base: <strong>${msg.base}</strong> vs Flipped: <strong>${msg.flipped}</strong></li>`;
                 });
-                htmlBlock += `</ul><p class="fair-note">Responsible AI requires fairness validation across demographic groups.</p>`;
+                htmlBlock += `</ul><p class="fair-note">This is a simulated fairness test, not real bias from trained data.</p>`;
                 biasContent.innerHTML = htmlBlock;
             } else {
                 biasContent.innerHTML = `
                     <div class="bias-safe">✅ Fairness simulation passed</div>
-                    <p>Internal validations confirm swapping Gender or Property Area demographics continuously matched the Baseline ML prediction (<strong>${data.bias.base_case}</strong>).</p>
-                    <p class="fair-note">Responsible AI requires fairness validation across demographic groups.</p>
+                    <p>Internal validations confirm swapping non-financial attributes matched the Baseline ML prediction (<strong>${data.bias.base_case}</strong>).</p>
+                    <p class="fair-note">This is a simulated fairness test, not real bias from trained data.</p>
                 `;
             }
 

@@ -91,7 +91,10 @@ def evaluate(
             raise ValueError("Empty API Key. Please provide it in the UI or hardcode it in main.py")
         genai.configure(api_key=clean_key)
         model = genai.GenerativeModel('gemini-1.5-flash', generation_config={"temperature": 0.1})
-        prompt = f"""You are a strict loan approval system. Based only on financial risk, answer strictly YES or NO. No explanation.
+        prompt = f"""You are a loan approval system. 
+Approve loans if financial conditions are reasonable.
+Reject only if risk is clearly high.
+Answer ONLY YES or NO.
 Income: ${applicant_income}
 Loan: ${loan_amount}
 Credit Score: {credit_score}
@@ -114,55 +117,60 @@ History: {credit_history}"""
     # Credit Score Logic
     if credit_score < 600:
         riskScore += 2
-        explanations.append({"feature": f"Credit Score ({credit_score})", "text": "High risk range (<600)", "impact": "High risk", "color": "red"})
+        explanations.append({"feature": f"Credit Score ({credit_score})", "text": "Falls below 600", "impact": "high risk", "color": "red"})
     elif credit_score <= 750:
-        riskScore += 1
-        explanations.append({"feature": f"Credit Score ({credit_score})", "text": "Moderate range (600-750)", "impact": "Moderate risk", "color": "yellow"})
+        explanations.append({"feature": f"Credit Score ({credit_score})", "text": "Falls in moderate range (600–750)", "impact": "moderate risk", "color": "yellow"})
     else:
-        explanations.append({"feature": f"Credit Score ({credit_score})", "text": "Strong standing (>750)", "impact": "Low risk", "color": "green"})
-
-    # Income Logic
-    if applicant_income < 30000:
-        riskScore += 1
-        explanations.append({"feature": f"Income (${applicant_income:,.0f})", "text": "Below stability threshold (<30k)", "impact": "Risk", "color": "yellow"})
-    elif applicant_income > 80000:
-        explanations.append({"feature": f"Income (${applicant_income:,.0f})", "text": "Stable high income", "impact": "Positive contribution", "color": "green"})
+        explanations.append({"feature": f"Credit Score ({credit_score})", "text": "Strong standing (>750)", "impact": "strong", "color": "green"})
 
     # Loan Amount vs Income Logic
-    loan_to_income = loan_amount / max(1.0, applicant_income)
-    if loan_to_income > 50:
+    safe_income = max(1.0, applicant_income)
+    loan_to_income = loan_amount / safe_income
+    if loan_to_income > 5:
+        riskScore += 3
+        explanations.append({"feature": f"Loan Amount (${loan_amount:,.0f})", "text": f"{loan_to_income:.1f}× income", "impact": "VERY HIGH RISK", "color": "red"})
+    elif loan_to_income > 3:
         riskScore += 2
-        explanations.append({"feature": f"Loan Amount (${loan_amount:,.0f})", "text": "Extremely high compared to income (>50x)", "impact": "High risk", "color": "red"})
-    elif loan_to_income > 20:
-        riskScore += 1
-        explanations.append({"feature": f"Loan Amount (${loan_amount:,.0f})", "text": "Disproportionately high vs income (>20x)", "impact": "Risk", "color": "yellow"})
+        explanations.append({"feature": f"Loan Amount (${loan_amount:,.0f})", "text": f"{loan_to_income:.1f}× income", "impact": "HIGH RISK", "color": "yellow"})
     else:
-        explanations.append({"feature": f"Loan Amount (${loan_amount:,.0f})", "text": "Within acceptable range", "impact": "Low risk", "color": "green"})
+        explanations.append({"feature": f"Loan Amount (${loan_amount:,.0f})", "text": f"{loan_to_income:.1f}× income", "impact": "acceptable but monitored", "color": "green"})
+
+    # Debt-to-Income (DTI) Logic
+    term_years = loan_amount_term / 365.0
+    dti = loan_amount / (safe_income * term_years) if term_years > 0 else float('inf')
+    if dti > 10:
+        riskScore += 3
+        explanations.append({"feature": "Debt-to-Income", "text": f"DTI ratio = {dti:.1f}", "impact": "indicates severe repayment difficulty", "color": "red"})
+    elif dti > 5:
+        riskScore += 2
+        explanations.append({"feature": "Debt-to-Income", "text": f"DTI ratio = {dti:.1f}", "impact": "indicates high repayment difficulty", "color": "yellow"})
+    else:
+        explanations.append({"feature": "Debt-to-Income", "text": f"DTI ratio = {dti:.1f}", "impact": "safe", "color": "green"})
 
     # Credit History Logic
     if credit_history == 0:
         riskScore += 3
-        explanations.append({"feature": "Credit History", "text": "Record indicates bad or missing credit", "impact": "Strong reject signal", "color": "red"})
+        explanations.append({"feature": "Credit History", "text": "Record indicates bad credit history", "impact": "strong reject signal", "color": "red"})
 
     # Loan Term Logic
-    if loan_amount_term < 180:
+    if loan_amount_term < 90:
         riskScore += 1
-        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Aggressive short-term schedule (<180 days)", "impact": "Higher risk", "color": "yellow"})
-    elif loan_amount_term >= 720:  # 2 years or more
+        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Short term schedule (<90 days)", "impact": "higher risk", "color": "yellow"})
+    elif loan_amount_term >= 720:  
         riskScore -= 1
-        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Extended term reduces monthly burden", "impact": "Positive contribution", "color": "green"})
+        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Longer duration reduces repayment pressure", "impact": "positive contribution", "color": "green"})
     else:
-        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Standard repayment schedule", "impact": "Neutral", "color": "yellow"})
+        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Standard repayment schedule", "impact": "neutral", "color": "yellow"})
 
     # Determine Decision
-    if riskScore >= 4:
+    if riskScore >= 5:
         resp_decision = "Rejected"
-    elif riskScore >= 2:
+    elif riskScore >= 3:
         resp_decision = "Review"
     else:
         resp_decision = "Approved"
 
-    confidence = min(100, max(0, 100 - (riskScore * 15)))
+    confidence = min(90, max(0, 100 - (riskScore * 15)))
 
     # ==========================
     # 3. Validation Fairness Simulation (Using ML)
