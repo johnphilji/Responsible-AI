@@ -1,0 +1,23 @@
+# Environments
+venv/
+env/
+.env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Datasets
+# Our Python server automatically downloads this Kaggle dataset on startup if it's missing,
+# so there's no need to upload this large file to GitHub!
+loan_dataset.csv
+
+# macOS/Windows system files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
