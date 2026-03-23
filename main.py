@@ -145,9 +145,14 @@ History: {credit_history}"""
         explanations.append({"feature": "Credit History", "text": "Record indicates bad or missing credit", "impact": "Strong reject signal", "color": "red"})
 
     # Loan Term Logic
-    if loan_amount_term < 90:
+    if loan_amount_term < 180:
         riskScore += 1
-        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Short term schedule (<90 days)", "impact": "Higher risk", "color": "yellow"})
+        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Aggressive short-term schedule (<180 days)", "impact": "Higher risk", "color": "yellow"})
+    elif loan_amount_term >= 720:  # 2 years or more
+        riskScore -= 1
+        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Extended term reduces monthly burden", "impact": "Positive contribution", "color": "green"})
+    else:
+        explanations.append({"feature": f"Loan Term ({loan_amount_term} days)", "text": "Standard repayment schedule", "impact": "Neutral", "color": "yellow"})
 
     # Determine Decision
     if riskScore >= 4:
@@ -157,7 +162,7 @@ History: {credit_history}"""
     else:
         resp_decision = "Approved"
 
-    confidence = max(0, 100 - (riskScore * 15))
+    confidence = min(100, max(0, 100 - (riskScore * 15)))
 
     # ==========================
     # 3. Validation Fairness Simulation (Using ML)
