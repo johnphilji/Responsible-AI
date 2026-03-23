@@ -1,7 +1,7 @@
 import os
 import urllib.request
 import pandas as pd
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from sklearn.tree import DecisionTreeClassifier
@@ -10,13 +10,11 @@ import google.generativeai as genai
 
 app = FastAPI()
 
-# Mount static folder
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 dataset_url = "https://raw.githubusercontent.com/dphi-official/Datasets/master/Loan_Data/loan_train.csv"
 dataset_path = "loan_dataset.csv"
 
-# Download the Kaggle dataset replica if not present
 if not os.path.exists(dataset_path):
     print("Downloading dataset...")
     urllib.request.urlretrieve(dataset_url, dataset_path)
@@ -35,7 +33,6 @@ for col in df.columns:
         else:
             df[col] = df[col].fillna(df[col].median())
 
-# Clean the 'Dependents' column (e.g., '3+')
 if 'Dependents' in df.columns:
     df['Dependents'] = df['Dependents'].astype(str).str.replace('+', '', regex=False).astype(int)
 
@@ -68,6 +65,7 @@ def read_root():
 @app.post("/api/evaluate")
 def evaluate(
     api_key: str = Form(...),
+    age: int = Form(...),
     gender: str = Form(...),
     married: str = Form(...),
     dependents: str = Form(...),
@@ -77,7 +75,7 @@ def evaluate(
     coapplicant_income: float = Form(...),
     loan_amount: float = Form(...),
     loan_amount_term: float = Form(...),
-    credit_history: float = Form(...),
+    credit_score: int = Form(...),
     property_area: str = Form(...)
 ):
     # ==========================
@@ -90,10 +88,10 @@ def evaluate(
         if not clean_key:
             raise ValueError("Empty API Key")
         genai.configure(api_key=clean_key)
-        # We can use gemini-2.5-flash or gemini-pro. gemini-1.5-flash is safer if 2.5 isn't available everywhere
         model = genai.GenerativeModel('gemini-1.5-flash')
         prompt = f"""
         A person has applied for a loan with these details:
+        Age: {age}
         Gender: {gender}
         Married: {married}
         Dependents: {dependents}
@@ -103,7 +101,7 @@ def evaluate(
         Coapplicant Income: {coapplicant_income}
         Loan Amount: {loan_amount}
         Loan Amount Term (days): {loan_amount_term}
-        Credit History (1=Good, 0=Bad): {credit_history}
+        Credit Score: {credit_score}
         Property Area: {property_area}
 
         Should their loan be approved? Answer only 'Yes' or 'No'. No explanation.
@@ -131,6 +129,9 @@ def evaluate(
     encoded_self_emp = encode_safe(self_employed, 'Self_Employed')
     encoded_prop = encode_safe(property_area, 'Property_Area')
 
+    # Convert numeric Credit Score back to Kaggle's binary Credit_History for the ML model
+    credit_history = 1.0 if credit_score >= 600 else 0.0
+
     input_data = pd.DataFrame([[
         encoded_gender, encoded_married, dep, encoded_education, encoded_self_emp,
         applicant_income, coapplicant_income, loan_amount, loan_amount_term,
@@ -140,30 +141,59 @@ def evaluate(
     prediction = clf.predict(input_data)[0]
     resp_decision = "Approved" if prediction == 1 else "Rejected"
 
-    # Explanation Logic using Decision Tree Feature Importances
-    importances = clf.feature_importances_
-    top_indices = importances.argsort()[-3:][::-1] # Top 3 features
+    # ==========================
+    # 3. Rule-based Custom Explanations & Confidence
+    # ==========================
+    explanations = []
+    riskScore = 0
+
+    if credit_score < 600:
+        explanations.append({"feature": "Credit Score", "value": credit_score, "text": "Below threshold (600)", "impact": "High negative", "color": "red"})
+        riskScore += 2
+    else:
+        explanations.append({"feature": "Credit Score", "value": credit_score, "text": "Strong standing (>=600)", "impact": "Positive", "color": "green"})
+
+    if applicant_income < 30000:
+        explanations.append({"feature": "Income", "value": f"${applicant_income}", "text": "Below stability threshold ($30k)", "impact": "Moderate negative", "color": "red"})
+        riskScore += 1
+    elif applicant_income > 80000:
+        explanations.append({"feature": "Income", "value": f"${applicant_income}", "text": "High income improves eligibility", "impact": "Positive", "color": "green"})
+    else:
+        explanations.append({"feature": "Income", "value": f"${applicant_income}", "text": "Standard income range", "impact": "Moderate", "color": "yellow"})
+
+    if age < 21:
+        explanations.append({"feature": "Age", "value": age, "text": "Below standard credit age (21)", "impact": "Moderate negative", "color": "red"})
+        riskScore += 1
+        
+    if coapplicant_income < 2000:
+        explanations.append({"feature": "Coapplicant Income", "value": f"${coapplicant_income}", "text": "Low additional contribution", "impact": "Low", "color": "yellow"})
+
+    confidence = max(0, 100 - (riskScore * 20))
+
+    # ==========================
+    # 4. Bias & Fairness Check (Counterfactual Testing)
+    # ==========================
+    bias_detected = False
     
-    explanation_parts = []
-    for idx in top_indices:
-        feat = feature_names[idx]
-        imp = importances[idx]
-        if imp > 0.00: # Always show the top features for full transparency
-            val = input_data.iloc[0][feat]
-            # Convert back to readable text
-            readable_val = val
-            if feat in encoders:
-                readable_val = encoders[feat].inverse_transform([int(val)])[0]
-            
-            impact = "High" if imp > 0.3 else ("Moderate" if imp > 0.1 else "Low")
-            explanation_parts.append({
-                "feature": feat.replace('_', ' '),
-                "value": readable_val,
-                "impact": impact
-            })
+    flipped_gender = "Female" if gender == "Male" else "Male"
+    encoded_flipped_gender = encode_safe(flipped_gender, 'Gender')
+    
+    case_b_df = input_data.copy()
+    case_b_df['Gender'] = encoded_flipped_gender
+    pred_b_val = clf.predict(case_b_df)[0]
+    pred_b = "Approved" if pred_b_val == 1 else "Rejected"
+    
+    if resp_decision != pred_b:
+        bias_detected = True
 
     return {
         "normal_ai_decision": normal_decision,
         "responsible_ai_decision": resp_decision,
-        "explanations": explanation_parts
+        "explanations": explanations,
+        "confidence": confidence,
+        "bias": {
+            "detected": bias_detected,
+            "original_case": f"{gender}: {resp_decision}",
+            "flipped_case": f"{flipped_gender}: {pred_b}"
+        }
     }

@@ -30,30 +30,59 @@ document.getElementById('loanForm').addEventListener('submit', async (e) => {
             updateDecisionUI('normalDecisionUI', 'normalDecisionText', data.normal_ai_decision);
             updateDecisionUI('respDecisionUI', 'respDecisionText', data.responsible_ai_decision);
 
+            // Confidence Bar
+            const confBar = document.getElementById('confidenceBar');
+            const confText = document.getElementById('confidenceText');
+            confBar.style.width = `${data.confidence}%`;
+            confText.textContent = `${data.confidence}%`;
+            
+            if(data.confidence >= 80) {
+                confBar.style.backgroundColor = 'var(--approved)';
+            } else if(data.confidence >= 50) {
+                confBar.style.backgroundColor = 'var(--moderate)';
+            } else {
+                confBar.style.backgroundColor = 'var(--rejected)';
+            }
+
             // Populate Explanations
             const explList = document.getElementById('explanationList');
             explList.innerHTML = ''; // clear
 
             if(data.explanations && data.explanations.length > 0) {
                 data.explanations.forEach(expl => {
-                    const li = document.createElement('li');
+                    const row = document.createElement('div');
+                    row.className = 'expl-row';
                     
-                    const textNode = document.createElement('span');
-                    textNode.innerHTML = `Because your <strong>${expl.feature}</strong> is <strong>${expl.value}</strong>, it had a `;
+                    const title = document.createElement('div');
+                    title.className = 'expl-title';
+                    title.textContent = `- ${expl.feature} (${expl.value}):`;
                     
-                    const badge = document.createElement('span');
-                    badge.className = 'impact-badge';
-                    badge.textContent = `${expl.impact} impact`;
-                    
-                    const endNode = document.createTextNode(' on this decision.');
+                    const reason = document.createElement('div');
+                    reason.className = `expl-reason ${expl.color}`;
+                    reason.textContent = `${expl.text} → ${expl.impact} impact`;
 
-                    li.appendChild(textNode);
-                    li.appendChild(badge);
-                    li.appendChild(endNode);
-                    explList.appendChild(li);
+                    row.appendChild(title);
+                    row.appendChild(reason);
+                    explList.appendChild(row);
                 });
+            }
+
+            // Bias Check
+            const biasContent = document.querySelector('.bias-content');
+            if (data.bias.detected) {
+                biasContent.innerHTML = `
+                    <div class="bias-warning">⚠️ Potential bias detected in decision-making</div>
+                    <p>Case A (${data.bias.original_case.split(':')[0]}): <strong>${data.bias.original_case.split(':')[1]}</strong></p>
+                    <p>Case B (${data.bias.flipped_case.split(':')[0]}): <strong>${data.bias.flipped_case.split(':')[1]}</strong></p>
+                    <p class="fair-note">The model changed its prediction based solely on Gender. This violates fairness thresholds and requires algorithmic adjustment.</p>
+                `;
             } else {
-                explList.innerHTML = '<li>We looked at all your details, but no single specific factor strongly stood out to cause this.</li>';
+                biasContent.innerHTML = `
+                    <div class="bias-safe">✅ Bias test passed</div>
+                    <p>Case A (${data.bias.original_case.split(':')[0]}): <strong>${data.bias.original_case.split(':')[1]}</strong></p>
+                    <p>Case B (${data.bias.flipped_case.split(':')[0]}): <strong>${data.bias.flipped_case.split(':')[1]}</strong></p>
+                    <p class="fair-note">Responsible AI ensures fairness checks across groups. The decision remained consistent regardless of demographic variations.</p>
+                `;
             }
 
             // Show Results

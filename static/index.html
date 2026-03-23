@@ -21,11 +21,16 @@
         </header>
 
         <main>
+            <!-- Data Source Panel -->
+            <section class="card data-source-panel glass">
+                <h3>📊 Data Source</h3>
+                <p>This model is inspired by the <strong>Loan Prediction Dataset (Kaggle)</strong>, which includes features like income, credit history, and loan status. Building systems on verified public data improves accountability.</p>
+            </section>
+
             <!-- Inputs Section -->
             <section class="card input-section glass">
                 <div class="section-header">
                     <h2>Applicant Profile</h2>
-                    <span class="dataset-tag">Kaggle Dataset Format</span>
                 </div>
                 
                 <form id="loanForm">
@@ -35,6 +40,14 @@
                     </div>
 
                     <div class="form-grid">
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" name="age" required min="18" placeholder="e.g. 35" value="30">
+                        </div>
+                        <div class="form-group">
+                            <label>Credit Score (300-850)</label>
+                            <input type="number" name="credit_score" required min="300" max="850" placeholder="e.g. 700" value="650">
+                        </div>
                         <div class="form-group">
                             <label>Gender</label>
                             <select name="gender" required>
@@ -74,26 +87,19 @@
                         </div>
                         <div class="form-group">
                             <label>Applicant Income ($)</label>
-                            <input type="number" name="applicant_income" required min="0" placeholder="e.g. 5000">
+                            <input type="number" name="applicant_income" required min="0" placeholder="e.g. 50000" value="45000">
                         </div>
                         <div class="form-group">
                             <label>Coapplicant Income ($)</label>
-                            <input type="number" name="coapplicant_income" required min="0" placeholder="e.g. 2000">
+                            <input type="number" name="coapplicant_income" required min="0" placeholder="e.g. 2000" value="0">
                         </div>
                         <div class="form-group">
                             <label>Loan Amount ($k)</label>
-                            <input type="number" name="loan_amount" required min="0" placeholder="e.g. 150">
+                            <input type="number" name="loan_amount" required min="0" placeholder="e.g. 150" value="120">
                         </div>
                         <div class="form-group">
                             <label>Loan Term (Days)</label>
-                            <input type="number" name="loan_amount_term" required min="12" placeholder="e.g. 360">
-                        </div>
-                        <div class="form-group">
-                            <label>Credit History</label>
-                            <select name="credit_history" required>
-                                <option value="1.0">Good (1.0)</option>
-                                <option value="0.0">Bad (0.0)</option>
-                            </select>
+                            <input type="number" name="loan_amount_term" required min="12" placeholder="e.g. 360" value="360">
                         </div>
                         <div class="form-group">
                             <label>Property Area</label>
@@ -129,7 +135,7 @@
                     </div>
                     
                     <div class="ai-footer">
-                        <p class="description"><strong>Black Box Model:</strong> This AI gives a quick "Yes" or "No" without telling us why. We have no way to verify its reasoning.</p>
+                        <p class="description"><strong>Black Box Model:</strong> This is a black-box response with no explanation or traceable reasoning. It is prone to hallucination and biases built into global training data.</p>
                     </div>
                 </div>
 
@@ -145,21 +151,38 @@
                             <span id="respDecisionText">...</span>
                         </div>
                     </div>
+
+                    <div class="confidence-module">
+                        <h3>Model Confidence</h3>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="confidenceBar"></div>
+                        </div>
+                        <p class="conf-text">Confidence: <span id="confidenceText">0%</span></p>
+                        <p class="small-hint">Higher confidence means stronger model certainty based on explicit rule thresholds.</p>
+                    </div>
                     
                     <div class="explanation-module">
-                        <h3>Why did that happen?</h3>
-                        <p>Here are the exact reasons for your result:</p>
-                        <ul id="explanationList" class="expl-list">
+                        <h3>Why was this decision made?</h3>
+                        <div id="explanationList" class="structured-expl">
                             <!-- Populated dynamically -->
-                        </ul>
+                        </div>
+                    </div>
+
+                    <div class="bias-module" id="biasPanel">
+                        <h3>Bias & Fairness Test</h3>
+                        <div class="bias-content">
+                            <!-- Populated dynamically -->
+                        </div>
                     </div>
 
                     <div class="rai-panel">
-                        <h3>Why is this better?</h3>
+                        <h3>Responsible AI Principles</h3>
                         <ul>
-                            <li><span class="icon">🔍</span> <strong>Clear Rules:</strong> We can see the exact math that made the decision. No secrets.</li>
-                            <li><span class="icon">⚖️</span> <strong>Fairness Assured:</strong> Built carefully from real historical data, not random internet text.</li>
-                            <li><span class="icon">🔒</span> <strong>Your Privacy:</strong> Your sensitive financial details never left your computer.</li>
+                            <li><span class="icon">🔍</span> <strong>Transparency:</strong> Decision is based on explicit rules and visible thresholds.</li>
+                            <li><span class="icon">⚖️</span> <strong>Fairness:</strong> System includes bias testing across demographic variations.</li>
+                            <li><span class="icon">🔒</span> <strong>Privacy:</strong> No personal identity data is stored or transmitted externally.</li>
+                            <li><span class="icon">🛡️</span> <strong>Accountability:</strong> This system is for decision-support only.</li>
+                            <li><span class="icon">⚠️</span> <strong>Limitations:</strong> Simplified model; real-world decisions require more complex validation.</li>
                         </ul>
                     </div>
                 </div>
