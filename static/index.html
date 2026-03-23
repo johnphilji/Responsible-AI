@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Responsible AI | Loan Approval</title>
+    <title>AI Risk Engine</title>
     <link rel="stylesheet" href="/static/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="bg-shape shape-1"></div>
@@ -15,178 +15,144 @@
         <header>
             <div class="logo-area">
                 <div class="shield-icon">🛡️</div>
-                <h1>Responsible AI <span>Loan Model</span></h1>
+                <h1>AI Risk <span>Decision Engine</span></h1>
             </div>
-            <p>Comparing Black-Box Decisions vs. Transparent Local Machine Learning</p>
+            <p>Enterprise-grade interpretability for financial machine learning.</p>
         </header>
 
-        <main>
-            <!-- Data Source Panel -->
-            <section class="card data-source-panel glass">
-                <h3>📊 Data Source</h3>
-                <p>This model is inspired by the <strong>Loan Prediction Dataset (Kaggle)</strong>, which includes features like income, credit history, and loan status. Building systems on verified public data improves accountability.</p>
-            </section>
-
-            <!-- Inputs Section -->
-            <section class="card input-section glass">
-                <div class="section-header">
-                    <h2>Applicant Profile</h2>
-                </div>
-                
-                <form id="loanForm">
-                    <div class="api-key-group">
-                        <label for="apiKey">Gemini API Key <span>(Required for Normal AI)</span></label>
-                        <input type="password" id="apiKey" name="api_key" required placeholder="AIzaSy...">
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Age</label>
-                            <input type="number" name="age" required min="18" placeholder="e.g. 35" value="30">
-                        </div>
-                        <div class="form-group">
-                            <label>Credit Score (300-850)</label>
-                            <input type="number" name="credit_score" required min="300" max="850" placeholder="e.g. 700" value="650">
-                        </div>
-                        <div class="form-group">
-                            <label>Gender</label>
-                            <select name="gender" required>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Married</label>
-                            <select name="married" required>
-                                <option value="Yes">Yes</option>
-                                <option value="No">No</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Dependents</label>
-                            <select name="dependents" required>
-                                <option value="0">0</option>
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3+">3+</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Education</label>
-                            <select name="education" required>
-                                <option value="Graduate">Graduate</option>
-                                <option value="Not Graduate">Not Graduate</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Self Employed</label>
-                            <select name="self_employed" required>
-                                <option value="No">No</option>
-                                <option value="Yes">Yes</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Applicant Income ($)</label>
-                            <input type="number" name="applicant_income" required min="0" placeholder="e.g. 50000" value="45000">
-                        </div>
-                        <div class="form-group">
-                            <label>Coapplicant Income ($)</label>
-                            <input type="number" name="coapplicant_income" required min="0" placeholder="e.g. 2000" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>Loan Amount ($k)</label>
-                            <input type="number" name="loan_amount" required min="0" placeholder="e.g. 150" value="120">
-                        </div>
-                        <div class="form-group">
-                            <label>Loan Term (Days)</label>
-                            <input type="number" name="loan_amount_term" required min="12" placeholder="e.g. 360" value="360">
-                        </div>
-                        <div class="form-group">
-                            <label>Property Area</label>
-                            <select name="property_area" required>
-                                <option value="Urban">Urban</option>
-                                <option value="Semiurban">Semiurban</option>
-                                <option value="Rural">Rural</option>
-                            </select>
-                        </div>
+        <main class="dashboard-grid">
+            
+            <div class="left-column">
+                <!-- Inputs Section -->
+                <section class="card input-section">
+                    <div class="section-header">
+                        <h2>Applicant Profile</h2>
+                        <span class="subtext">Core financial indicators for evaluation.</span>
                     </div>
                     
-                    <button type="submit" class="submit-btn" id="submitBtn">
-                        <span class="btn-text">Generate AI Predictions</span>
-                        <div class="spinner hidden" id="spinner"></div>
-                    </button>
-                    <div id="error-message" class="error-msg hidden"></div>
-                </form>
-            </section>
+                    <form id="loanForm">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Credit Score</label>
+                                <input type="number" name="credit_score" required min="300" max="850" placeholder="e.g. 680" value="650">
+                            </div>
+                            <div class="form-group">
+                                <label>Applicant Income ($)</label>
+                                <input type="number" name="applicant_income" required min="0" placeholder="e.g. 45000" value="45000">
+                            </div>
+                            <div class="form-group">
+                                <label>Loan Amount ($)</label>
+                                <input type="number" name="loan_amount" required min="1" placeholder="e.g. 150000" value="120000">
+                            </div>
+                            <div class="form-group">
+                                <label>Loan Term (Days)</label>
+                                <input type="number" name="loan_amount_term" required min="1" placeholder="e.g. 360" value="360">
+                            </div>
+                            <div class="form-group">
+                                <label>Credit History</label>
+                                <select name="credit_history" required>
+                                    <option value="1">Good / Existing</option>
+                                    <option value="0">Bad / Missing</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Coapplicant Income <span class="muted">(Opt)</span></label>
+                                <input type="number" name="coapplicant_income" required min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>Age <span class="muted">(Opt)</span></label>
+                                <input type="number" name="age" required min="18" value="30">
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="submit-btn" id="submitBtn">
+                            <span class="btn-text">Evaluate Application</span>
+                            <div class="spinner hidden" id="spinner"></div>
+                        </button>
+                        <div id="error-message" class="error-msg hidden"></div>
+                    </form>
+                </section>
 
-            <!-- Results Section -->
-            <section class="results-section hidden" id="resultsSection">
-                <!-- Normal AI Component -->
-                <div class="card result-card glass normal-ai">
-                    <div class="card-top">
-                        <div class="badge black-box">Normal AI (LLM)</div>
+                <section class="card">
+                    <div class="section-header">
+                        <h2>Data Credibility</h2>
+                        <span class="subtext">Inspired by the Kaggle Loan Prediction Dataset.</span>
                     </div>
-                    <h2>Gemini Flash Model</h2>
+                    <div class="data-table-wrap">
+                        <table class="data-table">
+                            <thead><tr><th>Gender</th><th>Income</th><th>Loan</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr><td>Male</td><td>$5,849</td><td>150k</td><td><span class="status-y">Y</span></td></tr>
+                                <tr><td>Female</td><td>$2,900</td><td>100k</td><td><span class="status-n">N</span></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="right-column hidden" id="resultsSection">
+                <!-- Normal AI Component -->
+                <section class="card result-card normal-ai">
+                    <div class="card-top">
+                        <div class="badge black-box">Black Box AI</div>
+                        <h2>Gemini Flash Model</h2>
+                    </div>
                     
                     <div class="decision-container" id="normalDecisionContainer">
-                        <div class="decision-circle" id="normalDecisionUI">
-                            <span id="normalDecisionText">...</span>
+                        <div class="decision-card" id="normalDecisionUI">
+                            <span class="status-icon" id="normalDecisionIcon">•</span>
+                            <span class="status-text" id="normalDecisionText">Pending</span>
                         </div>
                     </div>
                     
-                    <div class="ai-footer">
-                        <p class="description"><strong>Black Box Model:</strong> This is a black-box response with no explanation or traceable reasoning. It is prone to hallucination and biases built into global training data.</p>
-                    </div>
-                </div>
+                    <p class="description"><strong>Warning:</strong> This decision has no explanation and cannot be mathematically verified. Usage of unexplainable models introduces regulatory risk.</p>
+                </section>
 
                 <!-- Responsible AI Component -->
-                <div class="card result-card glass responsible-ai">
+                <section class="card result-card responsible-ai">
                     <div class="card-top">
-                        <div class="badge explainable">Responsible AI (ML)</div>
+                        <div class="badge explainable">Responsible AI</div>
+                        <h2>Scorecard Engine</h2>
                     </div>
-                    <h2>Transparent Rule-Based AI</h2>
                     
-                    <div class="decision-container" id="respDecisionContainer">
-                        <div class="decision-circle" id="respDecisionUI">
-                            <span id="respDecisionText">...</span>
+                    <div class="decision-container">
+                        <div class="decision-card" id="respDecisionUI">
+                            <span class="status-icon" id="respDecisionIcon">•</span>
+                            <span class="status-text" id="respDecisionText">Pending</span>
+                        </div>
+                        <div class="confidence-side">
+                            <div class="conf-title">Confidence</div>
+                            <div class="conf-val" id="confidenceText">0%</div>
+                            <div class="progress-container"><div class="progress-bar" id="confidenceBar"></div></div>
                         </div>
                     </div>
 
-                    <div class="confidence-module">
-                        <h3>Model Confidence</h3>
-                        <div class="progress-container">
-                            <div class="progress-bar" id="confidenceBar"></div>
-                        </div>
-                        <p class="conf-text">Confidence: <span id="confidenceText">0%</span></p>
-                        <p class="small-hint">Higher confidence means stronger model certainty based on explicit rule thresholds.</p>
-                    </div>
-                    
                     <div class="explanation-module">
-                        <h3>Why was this decision made?</h3>
+                        <div class="expl-header">Decision Factors</div>
                         <div id="explanationList" class="structured-expl">
                             <!-- Populated dynamically -->
                         </div>
                     </div>
 
                     <div class="bias-module" id="biasPanel">
-                        <h3>Bias & Fairness Test</h3>
+                        <div class="bias-header">Bias & Fairness Audit</div>
                         <div class="bias-content">
                             <!-- Populated dynamically -->
                         </div>
                     </div>
 
                     <div class="rai-panel">
-                        <h3>Responsible AI Principles</h3>
+                        <h3>Model Insights</h3>
                         <ul>
-                            <li><span class="icon">🔍</span> <strong>Transparency:</strong> Decision is based on explicit rules and visible thresholds.</li>
-                            <li><span class="icon">⚖️</span> <strong>Fairness:</strong> System includes bias testing across demographic variations.</li>
-                            <li><span class="icon">🔒</span> <strong>Privacy:</strong> No personal identity data is stored or transmitted externally.</li>
-                            <li><span class="icon">🛡️</span> <strong>Accountability:</strong> This system is for decision-support only.</li>
-                            <li><span class="icon">⚠️</span> <strong>Limitations:</strong> Simplified model; real-world decisions require more complex validation.</li>
+                            <li><span class="icon">🔍</span> <strong>Transparency</strong>: Explicit rules and visible thresholds.</li>
+                            <li><span class="icon">⚖️</span> <strong>Fairness</strong>: ML demographic simulation confirms neutrality.</li>
+                            <li><span class="icon">🔒</span> <strong>Privacy</strong>: Processed heavily local; no PII storage.</li>
+                            <li><span class="icon">⚠️</span> <strong>Limitation</strong>: Simplified financial scope.</li>
                         </ul>
                     </div>
-                </div>
-            </section>
+                </section>
+            </div>
+            
         </main>
     </div>
 

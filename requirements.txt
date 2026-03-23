@@ -4,3 +4,4 @@ google-generativeai
 pandas
 scikit-learn
 python-multipart
+python-dotenv
