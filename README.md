@@ -8,9 +8,9 @@
 An enterprise-grade, web-based open-source application designed to showcase the critical difference between traditional "black box" Artificial Intelligence and "Responsible, Explainable AI."
 
 <p align="center">
-  <img src="screenshots/Screenshot%202026-03-25%20180438.png" alt="Project Screenshot 1" width="32%">
-  <img src="screenshots/Screenshot%202026-03-25%20180452.png" alt="Project Screenshot 2" width="32%">
-  <img src="screenshots/Screenshot%202026-03-25%20180500.png" alt="Project Screenshot 3" width="32%">
+  <img src="Screenshots\Screenshot 2026-03-25 180438.png" alt="Project Screenshot 1" width="32%">
+  <img src="Screenshots\Screenshot 2026-03-25 180452.png" alt="Project Screenshot 2" width="32%">
+  <img src="Screenshots\Screenshot 2026-03-25 180500.png" alt="Project Screenshot 3" width="32%">
 </p>
 
 ## 📖 Project Overview
