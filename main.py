@@ -31,10 +31,10 @@ df = df.drop(columns=['Unnamed: 0', 'Loan_ID'], errors='ignore')
 
 for col in df.columns:
     if df[col].isna().sum() > 0:
-        if df[col].dtype == 'object':
-            df[col] = df[col].fillna(df[col].mode()[0])
-        else:
+        if pd.api.types.is_numeric_dtype(df[col]):
             df[col] = df[col].fillna(df[col].median())
+        else:
+            df[col] = df[col].fillna(df[col].mode()[0])
 
 if 'Dependents' in df.columns:
     df['Dependents'] = df['Dependents'].astype(str).str.replace('+', '', regex=False).astype(int)
